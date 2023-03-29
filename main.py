@@ -1,14 +1,27 @@
 from tkinter import *
+from typing import Any
 
 
 class RunSimulation:
-    def __init__(self, root):
+    """
+    To Do: Class Description
+
+    Instance Attributes:
+    - 
+    """
+    def __init__(self, root: Any) -> None:
+    	"""
+    	To Do: Docstring
+    	"""
         self.canvas = Canvas(root, width=798, height=462)
         self.canvas.config(background="snow2")
         self.canvas.place(x=512, y=288, anchor="center")
         self.canvas.focus_set()
 
-def startGraphics():
+def startGraphics() -> None:
+    """
+    To Do: Docstring
+    """
     root = Tk()
     root.title("Air Nav")
     root.geometry("1024x576")
