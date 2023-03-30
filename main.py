@@ -5,18 +5,17 @@ from typing import Any
 class RunSimulation:
     """
     To Do: Class Description
-
     Instance Attributes:
-    - 
+        - root:  
     """
     def __init__(self, root: Any) -> None:
     	"""
     	To Do: Docstring
     	"""
-        self.canvas = Canvas(root, width=798, height=462)
-        self.canvas.config(background="snow2")
-        self.canvas.place(x=512, y=288, anchor="center")
-        self.canvas.focus_set()
+        # self.canvas = Canvas(root, width=798, height=462)
+        # self.canvas.config(background="snow2")
+        # self.canvas.place(x=512, y=288, anchor="center")
+        # self.canvas.focus_set()
 
 def startGraphics() -> None:
     """
