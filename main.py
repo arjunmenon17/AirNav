@@ -6,7 +6,7 @@ class RunSimulation:
     """
     To Do: Class Description
     Instance Attributes:
-        - root:  
+        - root:
     """
     def __init__(self, root: Any) -> None:
     	"""
@@ -27,16 +27,16 @@ def startGraphics() -> None:
     root.resizable(width=False, height=False)
     root.configure(bg="gold")
 
-    titleLabel = Label(root, bg="gold", text="Air Nav", font=("Harlow Solid Italic", 100))
-    titleLabel.place(x=512, y=150, anchor="center")
-    authorLabel = Label(root, bg="gold", text="Designed by Arjun, Rohan, Hadi & Azlan", font=("Dubai Light", 28))
-    authorLabel.place(x=512, y=250, anchor="center")
+    title_label = Label(root, bg="gold", text="Air Nav", font=("Harlow Solid Italic", 100))
+    title_label.place(x=512, y=150, anchor="center")
+    author_label = Label(root, bg="gold", text="Designed by Arjun, Rohan, Hadi & Azlan", font=("Dubai Light", 28))
+    author_label.place(x=512, y=250, anchor="center")
 
-    startButton = Button(root, text="Start", borderwidth=10, bg="gold", width=15, font=("Helvetica", 16, "bold"), command=lambda: RunSimulation(root))
-    startButton.place(x=367, y=420, anchor="center")
+    start_button = Button(root, text="Start", borderwidth=10, bg="gold", width=15, font=("Helvetica", 16, "bold"), command=lambda: RunSimulation(root))
+    start_button.place(x=367, y=420, anchor="center")
 
-    quitButton = Button(root, text="Quit", borderwidth=10, bg="gold",  width=15, font=("Helvetica", 16, "bold"), command=lambda: root.destroy())
-    quitButton.place(x=642, y=420, anchor="center")
+    quit_button = Button(root, text="Quit", borderwidth=10, bg="gold",  width=15, font=("Helvetica", 16, "bold"), command=lambda: root.destroy())
+    quit_button.place(x=642, y=420, anchor="center")
 
     mainloop()
 
