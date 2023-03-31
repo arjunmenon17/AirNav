@@ -20,13 +20,6 @@ def get_dataframe2(csv_file: str) -> list[list[str, str]]:
 
     return df2
 
-# def get_location(airport_key: str):
-#     df_routes = get_dataframe1('flight_routes.csv')
-#     df_airports = get_dataframe2('airports.csv')
-#     for source in df_airports:
-#         if airport_key == df_airports[0]:
-#             return [(route[1], route[2]) for route in df_routes if df_routes[0] == df_airports[1]]
-
 def get_location(airport_key: str) -> tuple[float, float]:
     """
     Returns the latitude/longtidude of a given airport
@@ -46,3 +39,5 @@ def get_destinations(airport_key: str) -> list[tuple[str, tuple[float, float]]]:
     for ind in df_routes.index:
         if df_routes['3 Char Code'][ind] == airport_key:
             return [(route[1], route[2]) for route in df_routes if df_routes[0] == df_airports[1]]
+
+def get_airports():
