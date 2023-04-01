@@ -15,19 +15,31 @@ class Airport:
         Each key in the mapping is the 3 character code of a neighbour airport,
         and the corresponding value is a tuple that contains the Airport object for that airport and its corresponding distance-based weight.
         This replaces the "neighbours" attribute in the _Vertex class from lecture.
+    - name:
+        The name of the airport
+    - country:
+        The country the airport is in
+    - city:
+        The city the airport is in
 
     Represenation Invariants:
-    - len(self.code) == 3
-    - all(self.routes[airport][0].code == airport for airport in self.routes)
+        - len(self.code) == 3
+        - all(self.routes[airport][0].code == airport for airport in self.routes)
     """
     code: str
+    name: str
+    country: str
+    city: str
     routes: dict[str, tuple[Airport, float]]
 
-    def __init__(self, code: str) -> None:
+    def __init__(self, code: str, airport_name: str, country: str, city: str) -> None:
         """
-        Initializes an empty Airport
+        Initializes an airport with its corresponding metadata
         """
         self.code = code
+        self.name = airport_name
+        self.country = country
+        self.city = city
         self.routes = {}
 
 
@@ -49,8 +61,9 @@ class FlightNetwork:
         Initializes an empty FlightNetwork 
         """
         # Initializes the list of airports in the flight network
+        self._airports = {}
         for airport in dt.get_airports():
-            self._airports[airport] = Airport(airport)
+            self._airports[airport[0]] = Airport(airport[0], airport[1], airport[2], airport[3])
         
         # Initializes the routes between the airports in the flight network
         for airport in self._airports:
@@ -58,44 +71,53 @@ class FlightNetwork:
                 weight = calculate_weight(dt.get_location(airport), destination[1])
                 self._airports[airport].routes[destination[0]] = tuple(self._airports[destination[1]], weight)
     
-    def find_shortest_route(self, src_airport: str, dest_airport: str) -> list[str]:
+
+    def find_shortest_route(self, src_airport: str, dest_airport: str) -> list[Airport]:
         """
-        Returns the shortest route between two airports based on their distances using Djikstra's algorithm
+        Returns the shortest route as a list of airports between two airports based on their distances using Djikstra's algorithm
 
         Preconditions:
             - len(src_airport) == 3 and len(dest_airport) == 3
         """
-        # Initialize the distances and visited dictionaries
-        distances = {airport_code: float('inf') for airport_code in self._airports}
-        distances[src_airport] = 0
-        visited = {airport_code: False for airport_code in self._airports}
+        # Initialize the distance dictionary with infinite distances to all airports except the source
+        dist = {airport: math.inf for airport in self._airports}
+        dist[src_airport] = 0
         
-        # Loop until all airports visited
-        while not all(visited.values()):
-            # Find the unvisited airport with the shortest distance so far
-            current_airport = None
-            for airport_code, airport_visited in visited.items():
-                if not airport_visited and (current_airport is None or distances[airport_code] < distances[current_airport]):
-                    current_airport = airport_code
-            visited[current_airport] = True
+        # Initialize the priority queue with the source airport
+        queue = [(0, self._airports[src_airport])]
+        
+        # Initialize the visited set
+        visited = set()
+        
+        while len(queue) != 0:
+            # Get the airport with the smallest distance from the priority queue
+            curr_dist, curr_airport = min(queue, key=lambda x: x[0])
+            queue.remove((curr_dist, curr_airport))
             
-            # Update the distances of the neighboring airports
-            for neighbor_code, (neighbor_airport, weight) in self._airports[current_airport].routes.items():
-                new_distance = distances[current_airport] + weight
-                if new_distance < distances[neighbor_code]:
-                    distances[neighbor_code] = new_distance
+            # Check if the airport has been visited
+            if curr_airport.code in visited:
+                continue
+            
+            # Add the airport to the visited set
+            visited.add(curr_airport.code)
+            
+            # Check if the current airport is the destination, and then return the path
+            if curr_airport.code == dest_airport:
+                path = [curr_airport]
+                while path[-1].code != src_airport:
+                    path.append(dist[path[-1].code][1])
+                return [self._airports[airport_code] for airport_code in path[::-1]]
+            
+            # Update the distances to the neighbours of the current airport
+            for neighbour_code, (neighbour, weight) in curr_airport.routes.items():
+                if neighbour.code not in visited:
+                    new_dist = curr_dist + weight
+                    if new_dist < dist[neighbour_code]:
+                        dist[neighbour_code] = new_dist
+                        queue.append((new_dist, neighbour))
         
-        # Reconstruct the shortest path using the distances
-        path = [dest_airport]
-        current_airport = dest_airport
-        while current_airport != src_airport:
-            for neighbor_code, (neighbor_airport, weight) in self._airports[current_airport].routes.items():
-                if distances[neighbor_code] + weight == distances[current_airport]:
-                    path.append(neighbor_code)
-                    current_airport = neighbor_code
-                    break
-        
-        return path[::-1]
+        # If the queue is empty then there is no path (empty path is returned)
+        return []
 
 def calculate_weight(first_point: tuple[float, float], second_point: tuple[float, float]) -> float:
     """
