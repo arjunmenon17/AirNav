@@ -1,3 +1,20 @@
+"""CSC111 Winter 2023 Course Project: AirNav 
+
+Module Information: data.py
+=============================== 
+ 
+This Python module contains the data parsing functions for building dataframes of
+the flight network's data and export functions for this data to be used in other
+parts of the program such as the GUI and the network module.
+
+Copyright and Usage Information 
+=============================== 
+ 
+This file is provided solely for the submission of the CSC111 Course Project and to be
+used by instructors and TAs while marking and assessing this project.
+ 
+This file is Copyright (c) 2023 Arjun Menon, Azlan Naeem, Hadi Naqvi, and Rohan Regi. 
+"""
 import os
 import pandas as pd
 import numpy as np
@@ -32,7 +49,7 @@ def get_dataframe2(csv_file: str) -> pd.DataFrame:  # list[list[str, str]]
     routes_df = pd.read_csv(csv_file, names=route_cols, skiprows=1, low_memory=False) # Has too many columns
     routes_df = routes_df[routes_df['Source'].isin(airport_codes) & routes_df['Dest'].isin(airport_codes)]
 
-    df = routes_df.dropna() # Drops rows with NaN values
+    df = routes_df.reset_index()
     df2 = df[['Source', 'Dest']]
 
     return df2
@@ -46,7 +63,6 @@ def get_location(airport_key: str) -> tuple[float, float]:
     for ind in DATAFRAME1.index:
         if DATAFRAME1['3 Char Code'][ind] == airport_key:
             return (DATAFRAME1['Lat'][ind], DATAFRAME1['Long'][ind])
-
 
 def get_destinations(airport_key: str) -> set[tuple[str, tuple[float, float]]]:
     """
@@ -71,9 +87,6 @@ def get_destinations(airport_key: str) -> set[tuple[str, tuple[float, float]]]:
 def get_airports() -> set[tuple[str]]:
     """
     Returns the set of tuples containing every airport's name, country, city, and code.
-
-    Preconditions:
-        - 
     """
     airports = []
     for ind in DATAFRAME1.index:
@@ -84,3 +97,4 @@ DATAFRAME1 = get_dataframe1("airports.csv")
 DATAFRAME2 = get_dataframe2("flight_routes.csv")
 route_airports = set(DATAFRAME2['Source']).union(set(DATAFRAME2['Dest']))
 DATAFRAME1 = DATAFRAME1[DATAFRAME1['3 Char Code'].isin(route_airports)]
+
