@@ -1,6 +1,25 @@
+"""CSC111 Winter 2023 Course Project: AirNav 
+
+Module Information: network.py
+=============================== 
+ 
+This Python module contains the graph and vertex classes for the flight network
+represented by airports and flight networks. It contains the graph constructor/initializer
+methods, the shortest path finder algorithm between airports, and a function that
+computes the distance between two points on Earth.
+
+Copyright and Usage Information 
+=============================== 
+ 
+This file is provided solely for the submission of the CSC111 Course Project and to be
+used by instructors and TAs while marking and assessing this project.
+ 
+This file is Copyright (c) 2023 Arjun Menon, Azlan Naeem, Hadi Naqvi, and Rohan Regi. 
+"""
 from __future__ import annotations
 from data import get_airports, get_location, get_destinations
 import math
+import heapq
 
 class Airport:
     """
@@ -80,45 +99,47 @@ class FlightNetwork:
         Preconditions:
             - len(src_airport) == 3 and len(dest_airport) == 3
         """
-        # Initialize the distance dictionary with infinite distances to all airports except the source
-        dist = {airport: math.inf for airport in self._airports}
-        dist[src_airport] = 0
-        
-        # Initialize the priority queue with the source airport and visited airports set
-        queue = [(0, self._airports[src_airport])]
-        visited = set()
-        prev = {}
-        
-        while len(queue) != 0:
-            # Get the airport with the smallest distance from the priority queue
-            curr_dist, curr_airport = min(queue, key=lambda x: x[0])
-            queue.remove((curr_dist, curr_airport))
-            
-            if curr_airport.code in visited:
+        # Check if there is a direct flight between source and destination airports
+        if dest_airport in self._airports[src_airport].routes:
+            return [self._airports[src_airport], self._airports[dest_airport]]
+
+        # Set up initial distances and previous airports
+        distances = {code: float("inf") for code in self._airports}
+        distances[src_airport] = 0
+        prev_airports = {code: None for code in self._airports}
+
+        # Set up heap (priority queue) with the initial vertex
+        heap = [(0, src_airport)]
+
+        # Run Djikstra's algorithm
+        while heap:
+            # Pop vertex with smallest distance so far
+            curr_distance, curr_vertex = heapq.heappop(heap)
+
+            # Check if we've reached the destination vertex
+            if curr_vertex == dest_airport:
+                # Reconstruct path and return it
+                path = []
+                while curr_vertex is not None:
+                    path.append(self._airports[curr_vertex])
+                    curr_vertex = prev_airports[curr_vertex]
+                return path[::-1]
+
+            # Check if we've already found a better path to this vertex
+            if curr_distance > distances[curr_vertex]:
                 continue
-            
-            visited.add(curr_airport.code)
-            
-            # Check if the current airport is the destination, and then return the path
-            if curr_airport.code == dest_airport:
-                print(prev)
-                path = [curr_airport]
-                while path[-1].code != src_airport:
-                    print(path[-1].code)
-                    path.append(prev[path[-1].code])
-                return [self._airports[airport_code] for airport_code in path[::-1]]
-            
-            print(curr_airport.routes.items())
-            # Update the distances of the neighbours of the current airport
-            for neighbour_code, (neighbour, weight) in curr_airport.routes.items(): # dict[str, tuple[Airport, float]]
-                if neighbour_code not in visited:
-                    new_dist = curr_dist + weight
-                    if new_dist < dist[neighbour_code]:
-                        dist[neighbour_code] = new_dist
-                        prev[neighbour_code] = curr_airport
-                        queue.append((new_dist, neighbour))
-        
+
+            # Look at all neighbouring vertices and update their distances if necessary
+            for neighbour_code, (neighbour, weight) in self._airports[curr_vertex].routes.items():
+                distance_to_neighbour = curr_distance + weight
+                if distance_to_neighbour < distances[neighbour_code]:
+                    distances[neighbour_code] = distance_to_neighbour
+                    prev_airports[neighbour_code] = curr_vertex
+                    heapq.heappush(heap, (distance_to_neighbour, neighbour_code))
+
+        # If we reach this point, there is no path between the two vertices
         return []
+
 
 def calculate_weight(first_point: tuple[float, float], second_point: tuple[float, float]) -> float:
     """
@@ -128,11 +149,12 @@ def calculate_weight(first_point: tuple[float, float], second_point: tuple[float
     Preconditions:
         - all(0 <= first_point[i] <= (90 + i * 90) and 0 <= second_point[i] <= (90 + i * 90) for i in range(2))
     """
-    # Calculates the latitude and longitude of each point
-    lat1, lon1, = math.radians(first_point[0]), math.radians(first_point[1])
-    lat2, lon2 = math.radians(second_point[0]), math.radians(second_point[1])
+    lon1, lat1, lon2, lat2 = map(math.radians, [first_point[0], first_point[1], second_point[0], second_point[1]])
 
-    # Haversine formula used to return the distance in kilometers between the two points
-    a = math.sin((lat2 - lat1) / 2) ** 2 + math.cos(lat2) * math.sin((lon2 - lon1) / 2) ** 2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return 6371 * c
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2) ** 2
+    c = 2 * math.asin(math.sqrt(a)) 
+    earth_radius = 6371
+    return c * earth_radius
+
