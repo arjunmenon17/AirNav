@@ -1,59 +1,46 @@
+from __future__ import annotations
 from tkinter import *
 from typing import Any
 import data as dt
-from network import FlightNetwork
-
-def create_frame(self, root: Any, network) -> None:
-    """
-    To Do: Docstring
-    """
-    root.destroy()
-    root = Tk()
-    root.title("Air Nav")
-    root.geometry("1024x576")
-    root.resizable(width=False, height=False)
-    root.configure(bg="gold")
-    e1 = Entry(root, width=15, font=("Helvetica", 16, "bold"))
-    e1.place(x=512, y=150, anchor="center")
-    l1 = Label(root, bg="gold", text="Origin Airport", font=("Helvetica", 16, "bold"))
-    l1.place(x=512, y=100, anchor="center")
-
-    e2 = Entry(root, width=15, font=("Helvetica", 16, "bold"))
-    e2.place(x=512, y=350, anchor="center")
-    l2 = Label(root, bg="gold", text="Destination Airport", font=("Helvetica", 16, "bold"))
-    l2.place(x=512, y=250, anchor="center")
-
-    start_button = Button(root, text="Start", borderwidth=10, bg="gold", width=15, font=("Helvetica", 16, "bold"), command=lambda: network.find_shortest_route(e1.get(), e2.get()))
-    start_button.place(x=367, y=420, anchor="center")
 
 
+def update(data):
+    my_list.delete(0, END)
 
-    mainloop()
+    for item in data:
+        my_list.insert(END, str(item[0]) + ", " + str(item[1]) + ", " + str(item[2]) + ", " + str(item[3]))
+    
 
-def start_graphics(network) -> None:
-    """
-    To Do: Docstring
-    """
-    root = Tk()
-    root.title("Air Nav")
-    root.geometry("1024x576")
-    root.resizable(width=False, height=False)
-    root.configure(bg="gold")
+def fillout(e):
+    my_entry.delete(0, END)
+    my_entry.insert(0, my_list.get(ANCHOR))
 
-    title_label = Label(root, bg="gold", text="Air Nav", font=("Harlow Solid Italic", 100))
-    title_label.place(x=512, y=150, anchor="center")
-    author_label = Label(root, bg="gold", text="Designed by Arjun, Rohan, Hadi & Azlan", font=("Dubai Light", 28))
-    author_label.place(x=512, y=250, anchor="center")
+def check(e, airports):
+    typed = my_entry.get()
+    if typed == '':
+        data = airports
+    else:
+        data = []
+        for item in airports:
+            if typed.lower() in item[0].lower() or typed.lower() in item[1].lower() or typed.lower() in item[2].lower() or typed.lower() in item[3].lower():
+                data.append(item)
 
-    start_button = Button(root, text="Start", borderwidth=10, bg="gold", width=15, font=("Helvetica", 16, "bold"), command=lambda: create_frame(root, network))
-    start_button.place(x=367, y=420, anchor="center")
+    update(data)
 
-    quit_button = Button(root, text="Quit", borderwidth=10, bg="gold",  width=15, font=("Helvetica", 16, "bold"), command=lambda: root.destroy())
-    quit_button.place(x=642, y=420, anchor="center")
+# if __name__ == '__main__':
+root = Tk()
+my_label = Label(root, text="Search Airport...", font=("Helvetica, 14"), fg="grey")
+my_label.pack(pady=20)
+my_entry = Entry(root, font=("Helvetica", 20))
+my_entry.pack()
 
-    mainloop()
+airports = dt.get_airports()
 
+var = Variable(value=[str(item[0]) + ", " + str(item[1]) + ", " + str(item[2]) + ", " + str(item[3]) for item in dt.get_airports()])
+my_list = Listbox(root, listvariable=var, height=6, selectmode=EXTENDED)
+my_list.pack(fill=BOTH, expand=True)
 
-if __name__ == '__main__':
-    network = FlightNetwork()
-    start_graphics(network)
+my_list.bind("<<ListboxSelect>>", func=lambda e: fillout(e))
+my_entry.bind("<KeyRelease>", func=lambda e, arg=dt.get_airports(): check(e, arg))
+
+mainloop()
