@@ -1,5 +1,5 @@
 from __future__ import annotations
-import data as dt
+from data import get_airports, get_location, get_destinations
 import math
 
 class Airport:
@@ -62,14 +62,15 @@ class FlightNetwork:
         """
         # Initializes the list of airports in the flight network
         self._airports = {}
-        for airport in dt.get_airports():
+        for airport in get_airports():
             self._airports[airport[0]] = Airport(airport[0], airport[1], airport[2], airport[3])
-        
+ 
         # Initializes the routes between the airports in the flight network
         for airport in self._airports:
-            for destination in dt.get_destination(airport):
-                weight = calculate_weight(dt.get_location(airport), destination[1])
-                self._airports[airport].routes[destination[0]] = tuple(self._airports[destination[1]], weight)
+            destinations = get_destinations(airport)
+            for destination in destinations:
+                weight = calculate_weight(get_location(airport), destination[1])
+                self._airports[airport].routes[destination[0]] = (self._airports[destination[0]], weight)
     
 
     def find_shortest_route(self, src_airport: str, dest_airport: str) -> list[Airport]:
@@ -83,40 +84,40 @@ class FlightNetwork:
         dist = {airport: math.inf for airport in self._airports}
         dist[src_airport] = 0
         
-        # Initialize the priority queue with the source airport
+        # Initialize the priority queue with the source airport and visited airports set
         queue = [(0, self._airports[src_airport])]
-        
-        # Initialize the visited set
         visited = set()
+        prev = {}
         
         while len(queue) != 0:
             # Get the airport with the smallest distance from the priority queue
             curr_dist, curr_airport = min(queue, key=lambda x: x[0])
             queue.remove((curr_dist, curr_airport))
             
-            # Check if the airport has been visited
             if curr_airport.code in visited:
                 continue
             
-            # Add the airport to the visited set
             visited.add(curr_airport.code)
             
             # Check if the current airport is the destination, and then return the path
             if curr_airport.code == dest_airport:
+                print(prev)
                 path = [curr_airport]
                 while path[-1].code != src_airport:
-                    path.append(dist[path[-1].code][1])
+                    print(path[-1].code)
+                    path.append(prev[path[-1].code])
                 return [self._airports[airport_code] for airport_code in path[::-1]]
             
-            # Update the distances to the neighbours of the current airport
-            for neighbour_code, (neighbour, weight) in curr_airport.routes.items():
-                if neighbour.code not in visited:
+            print(curr_airport.routes.items())
+            # Update the distances of the neighbours of the current airport
+            for neighbour_code, (neighbour, weight) in curr_airport.routes.items(): # dict[str, tuple[Airport, float]]
+                if neighbour_code not in visited:
                     new_dist = curr_dist + weight
                     if new_dist < dist[neighbour_code]:
                         dist[neighbour_code] = new_dist
+                        prev[neighbour_code] = curr_airport
                         queue.append((new_dist, neighbour))
         
-        # If the queue is empty then there is no path (empty path is returned)
         return []
 
 def calculate_weight(first_point: tuple[float, float], second_point: tuple[float, float]) -> float:
