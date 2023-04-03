@@ -31,7 +31,7 @@ def update(data):
     for item in data:
         my_list.insert(END, str(item[0]) + ", " + str(item[1]) + ", " + str(item[2]) + ", " + str(item[3]))
 
-def update2(data):
+def update2(data: set[tuple[str]]) -> None:
     """""
     Handler function that updates second list box on event
     """
@@ -41,21 +41,21 @@ def update2(data):
         my_list2.insert(END, str(item[0]) + ", " + str(item[1]) + ", " + str(item[2]) + ", " + str(item[3]))
     
 
-def fillout(e):
+def fillout(e: Event) -> None:
     """
     Handler function to update first entry box with every listbox click
     """
     my_entry.delete(0, END)
     my_entry.insert(0, my_list.get(ANCHOR))
 
-def fillout2(e):
+def fillout2(e: Event) -> None:
     """
     Handler function to update second entry box with every listbox click
     """
     my_entry2.delete(0, END)
     my_entry2.insert(0, my_list2.get(ANCHOR))
 
-def check(e, airports):
+def check(e: Event, airports: set[tuple[str]]) -> None:
     """
     Handler function to check entry in first textbox vs listbox
     """
@@ -70,7 +70,7 @@ def check(e, airports):
 
     update(data)
 
-def check2(e, airports):
+def check2(e: Event, airports: set[tuple[str]]) -> None:
     """
     Handler function to check entry in second textbox vs listbox
     """
@@ -85,7 +85,7 @@ def check2(e, airports):
 
     update2(data)
 
-def find_path(my_entry, my_entry2):
+def find_path(my_entry: Entry, my_entry2: Entry) -> None:
     """
     Shows the shortest route based on the source airport entered and destination airport entered in GUI. Uses find_shortest_route() from network.py to compute the shortest route.
     """
