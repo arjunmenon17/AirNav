@@ -11,11 +11,11 @@ def update(data):
         my_list.insert(END, str(item[0]) + ", " + str(item[1]) + ", " + str(item[2]) + ", " + str(item[3]))
     
 
-def fillout(e):
+def fillout(event):
     my_entry.delete(0, END)
     my_entry.insert(0, my_list.get(ANCHOR))
 
-def check(e, airports):
+def check(event, airports):
     typed = my_entry.get()
     if typed == '':
         data = airports
@@ -43,4 +43,3 @@ my_list.pack(fill=BOTH, expand=True)
 my_list.bind("<<ListboxSelect>>", func=lambda e: fillout(e))
 my_entry.bind("<KeyRelease>", func=lambda e, arg=dt.get_airports(): check(e, arg))
 
-mainloop()
